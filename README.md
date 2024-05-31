@@ -1,2 +1,2 @@
 # Modelado_en_NetLogo
-Este repositorio contiene una modificación del modelo original de NetLogo llamado "Moths" (Polillas). En este modelo, se simula el comportamiento de las polillas en respuesta a dos tipos de luces con diferentes longitudes de onda (luces rojas y azules).
+Este repositorio contiene una modificación del modelo original de NetLogo llamado "Moths" (Polillas). En este modelo, se simula el comportamiento de las polillas en respuesta a dos tipos de luces con diferentes longitudes de onda (luces rojas y azules). El objetivo de este modelo es explorar cómo las polillas reaccionan ante estos dos tipos de luces y analizar su comportamiento en diferentes condiciones de iluminación.
