@@ -1,190 +1,50 @@
 # Modelado_en_NetLogo
 Este repositorio contiene una modificación del modelo original de NetLogo llamado "Moths" (Polillas). En este modelo, se simula el comportamiento de las polillas en respuesta a dos tipos de luces con diferentes longitudes de onda (luces rojas y azules). El objetivo de este modelo es explorar cómo las polillas reaccionan ante estos dos tipos de luces y analizar su comportamiento en diferentes condiciones de iluminación.
-breed [ lights light ]
-breed [ moths moth ]
 
-globals
-[
-  scale-factor  ;; to control the form of the light field
-  trails        ;; list to store the trails of the moths
-  moth-speed    ;; variable to control the speed of the moths
-  violet-sensitivity
-  red-sensitivity
-]
+# Modelo de Polillas en NetLogo
 
-lights-own
-[
-  intensity
-]
+## Integrantes
+- Mariana Tellez Gutierrez
+- Isabella Cardona Betancour
+- Santiago Angel Franco
 
-moths-own
-[
-  ;; +1 means the moths turn to the right to try to evade a bright light
-  ;; (and thus circle the light source clockwise). -1 means the moths
-  ;; turn to the left (and circle the light counter-clockwise)
-  ;; The direction tendency is assigned to each moth when it is created and does not
-  ;; change during the moth's lifetime.
-  direction
-]
+## Tipo: Comportamiento Biológico - Polillas (Moths)
 
-patches-own
-[
-  light-level ;; represents the light energy from all light sources
-]
+## Modelo Base
+Este modelo muestra polillas volando en círculos alrededor de una luz. Cada polilla sigue un conjunto de reglas simples. Ninguna de las reglas especifica que la polilla deba buscar y luego rodear una luz. Más bien, el patrón observado surge de la combinación del vuelo aleatorio de la polilla y las simples reglas de comportamiento.
 
-to setup
-  clear-all
-  set-default-shape lights "circle 2"
-  set-default-shape moths "butterfly"
-  set scale-factor 50
-  set trails []
-  set moth-speed 2 ;; adjust this value to change the speed of the moths
-  set violet-sensitivity 0.5  ;; Sensibilidad baja para luces violetas
-  set red-sensitivity 2  ;; Sensibilidad alta para luces rojas
-  if number-lights > 0
-  [
-    make-lights number-lights
-    ask patches [ generate-field ]
-  ]
-  make-moths number-moths
-  reset-ticks
-end
+Los científicos han propuesto varias explicaciones de por qué las polillas se sienten atraídas por las luces y luego las rodean. Por ejemplo, los científicos alguna vez creyeron que las polillas navegaban por el cielo orientándose hacia la luna, y que la atracción de las polillas hacia fuentes de luz terrestres cercanas (como una farola) surgía porque confunden las luces terrestres con la luna. Sin embargo, si bien esta explicación puede parecer razonable, no está respaldada por la evidencia científica disponible.
 
-to go
-  ask moths [
-    move-thru-field
-    ;; add current position to trails
-    set trails lput (list xcor ycor ticks) trails
-  ]
-  ;; draw trails
-  draw-trails
-  ;; remove old trails
-  remove-old-trails
-  tick
-end
+## Marco Teórico
+En efecto, con los experimentos que realizó Sam Fabian, coautor del estudio e investigador de insectos del Imperial College de Londres (Reino Unido) se puede decir más bien que la luz artificial puede provocar un desajuste entre el sentido que tienen los insectos de la dirección de qué es arriba y la verdadera dirección de la gravedad.
 
-;;;;;;;;;;;;;;;;;;;;;;
-;; Setup Procedures ;;
-;;;;;;;;;;;;;;;;;;;;;;
+Los científicos también realizaron varios de estos experimentos con luz en un laboratorio y obtuvieron resultados similares, aunque todavía no pueden descartar que otros factores también puedan estar contribuyendo a la tendencia de los insectos a enjambrar la luz.
 
-to make-lights [ number ]
-  create-lights number [
-    let chosen-color random 2
-    if chosen-color = 0 [
-      set color red
-      set intensity 10  ;; Luminancia baja para luces rojas
-    ]
-    if chosen-color = 1 [
-      set color violet
-      set intensity 100  ;; Luminancia alta para luces violetas
-    ]
+Otras teorías han sugerido que la luz artificial ciega y desorienta a los insectos, que éstos se sienten atraídos por la radiación térmica de las luces o que piensan que la luz es una vía de escape, como un hueco en un arbusto.
 
-    jump 10 + random-float (max-pxcor - 30)
-    set size 10
-  ]
-end
+Entonces después de ver algunas pruebas, artículos y un documental de Animal Planet tomamos que: las polillas tienden a ser atraídas más hacia la luz ultravioleta (UV) que a la luz visible normal. Este comportamiento se debe a que muchas especies de polillas tienen fotorreceptores en sus ojos que son particularmente sensibles a las longitudes de onda más cortas, como las del espectro ultravioleta. Además, en la naturaleza, algunas fuentes de luz ultravioleta, como la luna y las estrellas, pueden ser utilizadas por las polillas para la navegación nocturna. Por lo tanto, en ambientes controlados, se observa que las trampas de luz UV son más efectivas para atraer polillas en comparación con las trampas que utilizan luz visible de otras longitudes de onda.
 
-to make-moths [ number ]
-  create-moths number [
-    ifelse (random 2 = 0)
-      [ set direction 1 ]
-      [ set direction -1 ]
-    set color white
-    jump random-float max-pxcor
-    set size 5
-  ]
-end
+## Explicación del Desarrollo
 
-to generate-field ;; patch procedure
-  set light-level 0
-  ;; every patch needs to check in with every light
-  ask lights
-    [ set-field myself ]
-  set pcolor scale-color white (sqrt light-level) 0.1 ( sqrt ( 20 * max [intensity] of lights ) )
-end
+### Modelo Modificado
+En nuestro modelo buscamos explicar este comportamiento biológico haciendo un enfoque a que las polillas vuelan en círculos y alrededor de los dos tipos de luz que incluimos: la luz violeta (representa la luz ultravioleta con menor longitud de onda), la luz roja (representa una onda con mayor longitud de onda), y de acuerdo con el tema de ondas electromagnéticas la luz violeta entonces será aquella que lleve mayor radiación térmica y atraerá mayormente a las polillas. Ninguna de las reglas especifica que la polilla deba buscar y luego rodear una luz. El patrón observado surge de la combinación del vuelo aleatorio de la polilla y las simples reglas de comportamiento, donde se trabaja una sensibilidad y luminancia para cada tipo de luz; dado que poseen un papel importante en el desarrollo del modelado y la modificación que se realizó.
 
-;; do the calculations for the light on one patch due to one light
-;; which is proportional to the distance from the light squared.
-to set-field [p]  ;; turtle procedure; input p is a patch
-  let rsquared (distance p) ^ 2
-  let amount intensity * scale-factor
-  ifelse rsquared = 0
-    [ set amount amount * 1000 ]
-    [ set amount amount / rsquared ]
-  ;; Aumentar el impacto de las luces violetas
-  if color = violet [
-    set amount amount * 2  ;; Incrementa el impacto de las luces violetas
-  ]
-  ask p [ set light-level light-level + amount ]
-end
+### Descripción del Modelo
+Esta es una modificación del modelo original de NetLogo llamado "Moths" (Polillas). En este modelo, se simula el comportamiento de las polillas en respuesta a dos tipos de luces con diferentes longitudes de onda:
+- **Luces rojas**: Tienen mayor sensibilidad pero menor luminancia.
+- **Luces moradas**: Tienen menor sensibilidad pero mayor luminancia.
 
-;;;;;;;;;;;;;;;;;;;;;;;;
-;; Runtime Procedures ;;
-;;;;;;;;;;;;;;;;;;;;;;;;
+El objetivo de este modelo es explorar cómo las polillas reaccionan ante estos dos tipos de luces y analizar su comportamiento en diferentes condiciones de iluminación.
 
-to move-thru-field    ;; turtle procedure
-  ifelse (light-level <= (1 / (10 * (ifelse-value ( [light-level] of patch-here > 20) [ violet-sensitivity ] [ red-sensitivity ] ))))
-  [
-    ;; if there is no detectable light move randomly
-    rt flutter-amount 45
-  ]
-  [
-    ifelse (random 25 = 0)
-    ;; add some additional randomness to the moth's movement, this allows some small
-    ;; probability that the moth might "escape" from the light.
-    [
-      rt flutter-amount 60
-    ]
-    [
-      ;; turn toward the brightest light
-      maximize
-      ;; if the light ahead is not above the sensitivity threshold  head towards the light
-      ;; otherwise move randomly
-      ifelse ([light-level] of patch-ahead 1 / light-level > (1 + 1 / (10 * (ifelse-value ( [light-level] of patch-here > 20) [ violet-sensitivity ] [ red-sensitivity ] ))))
-      [
-        lt ( direction * turn-angle )
-      ]
-      [
-        rt flutter-amount 60
-      ]
-    ]
-  ]
-  if not can-move? moth-speed
-    [ maximize ]
-  fd moth-speed
-end
+Este modelo modificado nos permite:
+- **Interactuar con diferentes longitudes de onda**: Las polillas muestran diferentes niveles de atracción hacia las luces rojas y moradas, proporcionando una visión más profunda de su comportamiento natural.
+- **Observar resultados visuales**: Recorridos temporales visibles que ayudan a interpretar los patrones de movimiento y comportamiento de las polillas.
 
-to maximize  ;; turtle procedure
-  face max-one-of patches in-radius 1 [light-level]
-end
+### Restricciones
+Se quitó el deslizador de sensibilidad y el de luminancia, debido a que le asignamos unos valores fijos de las susodichas a las polillas y a las luces. 
+Se sigue teniendo la posibilidad de escoger el número de luces (de 1 a 5); con la diferencia de que ahora se creará de forma aleatoria (el número de luces seleccionadas) de dos opciones; luces violetas y luces rojas. Que como explicamos con anterioridad, representarán luces con diferentes longitudes de onda (Las violetas con menor longitud de onda, y las rojas con mayor longitud de onda). 
+Los factores de la sensibilidad y la luminosidad pasarán a ser valores intrínsecos fijos de las luces rojas y violetas; y naturalmente, cómo reaccionan las polillas hacía ellas.
 
-to-report flutter-amount [limit]
-  ;; This routine takes a number as an input and returns a random value between
-  ;; (+1 * input value) and (-1 * input value).
-  ;; It is used to add a random flutter to the moth's movements
-  report random-float (2 * limit) - limit
-end
+## Bibliografía
+Kiley Price. 31 ENE 2024. ¿Atrae la luz a las polillas? Un nuevo estudio refuta este conocimiento popular. Estudio de Sam Fabian et al, Imperial College de Londres (Reino Unido). Publicado y adaptado por National Geographic. Tomado de: [National Geographic](https://www.nationalgeographic.es/animales/2024/01/atrae-luz-polillas-insectos-nuevo-estudio-refuta-conocimiento-popular)
 
-to draw-trails
-  ask patches [ set pcolor scale-color white (sqrt light-level) 0.1 (sqrt (20 * max [intensity] of lights)) ] ;; redraw light field
-  foreach trails [
-    pos ->
-    let x item 0 pos
-    let y item 1 pos
-    ask patch x y [ set pcolor blue ]
-  ]
-end
-
-to remove-old-trails
-  let new-trails []
-  foreach trails [
-    pos ->
-    let age ticks - item 2 pos
-    if age < 100 [
-      set new-trails lput pos new-trails
-    ]
-  ]
-  set trails new-trails
-end
-; Copyright 2005 Uri Wilensky.
-; See Info tab for full copyright and license.
